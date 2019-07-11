@@ -6,7 +6,9 @@ A super simple pool of proxies for HTTP requests in Go
 
 ```go
 
-proxyPool := pool.ProxyPool{}.Init([]string{"http://localhost:3521"}, &tls.Config{InsecureSkipVerify: true})
+proxyPool := pool.ProxyPool{}.
+	WithUrls([]string{"http://localhost:3521"}).
+    WithTlsConfig(&tls.Config{InsecureSkipVerify: true})
 
 client := proxyPool.GetClient()
 res, err := client.Get(url)

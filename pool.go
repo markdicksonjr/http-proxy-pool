@@ -7,20 +7,36 @@ import (
 	"net/url"
 )
 
+var DefaultProxyUrls []string
+var DefaultTlsConfig *tls.Config
+
 type ProxyPool struct {
 	urls      []string
 	tlsConfig *tls.Config
 }
 
-// Init initializes the pool with proxies and options
-func (p *ProxyPool) Init(urls []string, tlsConfig *tls.Config) error {
+func (p *ProxyPool) WithUrls(urls []string) *ProxyPool {
 	p.urls = urls
+	return p
+}
+
+func (p *ProxyPool) WithTlsConfig(tlsConfig *tls.Config) *ProxyPool {
 	p.tlsConfig = tlsConfig
-	return nil
+	return p
 }
 
 func (p *ProxyPool) GetClient() (*http.Client, error) {
 	var proxy func(*http.Request) (*url.URL, error)
+
+	// use the default proxy urls if none were given for this pool
+	if len(p.urls) == 0 && len(DefaultProxyUrls) > 0 {
+		p.urls = DefaultProxyUrls
+	}
+
+	// use the default TLS config, if none was given for this pool
+	if p.tlsConfig == nil && DefaultTlsConfig != nil {
+		p.tlsConfig = DefaultTlsConfig
+	}
 
 	// IF there's an available proxy pool, assign a proxy from it
 	if len(p.urls) > 0 {
